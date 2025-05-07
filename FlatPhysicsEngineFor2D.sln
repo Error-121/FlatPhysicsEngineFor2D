@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.13.35931.197 d17.13
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FlatPhysicsEngineFor2D", "FlatPhysicsEngineFor2D\FlatPhysicsEngineFor2D.csproj", "{3BCA0F67-053C-422B-A065-93B52065A087}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{3BCA0F67-053C-422B-A065-93B52065A087}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3BCA0F67-053C-422B-A065-93B52065A087}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3BCA0F67-053C-422B-A065-93B52065A087}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3BCA0F67-053C-422B-A065-93B52065A087}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {281F933E-F2F5-4EAF-A4A9-915DD0FEAD21}
+	EndGlobalSection
+EndGlobal
