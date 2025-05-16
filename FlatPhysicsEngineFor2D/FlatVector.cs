@@ -38,6 +38,13 @@
 			return new FlatVector(vector.X / scalar, vector.Y / scalar);
 		}
 
+		internal static FlatVector Transform(FlatVector vector, FlatTransform transform)
+		{
+			return new FlatVector(
+				transform.cos * vector.X - transform.sin * vector.Y + transform.positionX,
+				transform.sin * vector.X + transform.cos * vector.Y + transform.positionY );
+		}
+
 		public bool Equals(FlatVector other)
 		{
 			return X == other.X && Y == other.Y;
