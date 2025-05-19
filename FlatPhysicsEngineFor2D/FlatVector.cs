@@ -33,6 +33,11 @@
 			return new FlatVector(vector.X * scalar, vector.Y * scalar);
 		}
 
+		public static FlatVector operator *(float scalar, FlatVector vector)
+		{
+			return new FlatVector(vector.X * scalar, vector.Y * scalar);
+		}
+
 		public static FlatVector operator /(FlatVector vector, float scalar)
 		{
 			return new FlatVector(vector.X / scalar, vector.Y / scalar);
