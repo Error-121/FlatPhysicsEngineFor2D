@@ -24,6 +24,7 @@ namespace FlatPhysicsEngineFor2D
 		//everything below can be moved to a separate class
 		public readonly float density;
 		public readonly float mass;
+		public readonly float invMass;
 		public readonly float restitution;
 		public readonly float area;
 
@@ -72,6 +73,15 @@ namespace FlatPhysicsEngineFor2D
 			this.width = width;
 			this.height = height;
 			this.shapeType = shapeTybe;
+
+			if (!this.isStatic)
+			{
+				this.invMass = 1f / this.mass;
+			}
+			else
+			{
+				this.invMass = 0f;
+			}
 
 			if (this.shapeType is ShapeType.Box)
 			{

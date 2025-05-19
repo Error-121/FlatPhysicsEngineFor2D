@@ -69,12 +69,26 @@ namespace FlatPhysicsEngineFor2D
 				{
 					FlatBody bodyB = this.bodyList[j];
 
+					if (bodyA.isStatic && bodyB.isStatic)
+					{
+						continue;
+					}
 
 					if (this.Collide(bodyA, bodyB, out FlatVector normal, out float depth))
 					{
-						
-						bodyA.Move(-normal * depth / 2f);
-						bodyB.Move(normal * depth / 2f);
+						if (bodyA.isStatic)
+						{
+							bodyB.Move(normal * depth);
+						}
+						else if (bodyB.isStatic)
+						{
+							bodyA.Move(-normal * depth);
+						}
+						else
+						{
+							bodyA.Move(-normal * depth / 2f);
+							bodyB.Move(normal * depth / 2f);
+						}
 
 						this.ResolveCollision(bodyA, bodyB, normal, depth);
 					}
@@ -94,12 +108,12 @@ namespace FlatPhysicsEngineFor2D
 			float e = MathF.Min(bodyA.restitution, bodyB.restitution);
 
 			float j = -(1f + e) * FlatMath.Dot(relativeVelocity, normal);
-			j /= (1f / bodyA.mass ) + (1f / bodyB.mass);
+			j /= bodyA.invMass + bodyB.invMass;
 
 			FlatVector impulse = j * normal;
 
-			bodyA.LinearVelocity -= j / bodyA.mass * normal;
-			bodyB.LinearVelocity += j / bodyB.mass * normal;
+			bodyA.LinearVelocity -= impulse * bodyA.invMass;
+			bodyB.LinearVelocity += impulse * bodyB.invMass;
 		}
 
 		public bool Collide(FlatBody bodyA, FlatBody bodyB, out FlatVector normal, out float depth)
