@@ -200,6 +200,7 @@ namespace FlatPhysicsEngineFor2D
 
 				FlatVector edge = vb - va;
 				FlatVector axis = new FlatVector(-edge.Y, edge.X); // normalen er vinkelret på kanten
+				axis = FlatMath.Normalize(axis); // normaliser normalen
 
 				Collisions.ProjectVertices(verticesA, axis, out float minA, out float maxA);
 				Collisions.ProjectVertices(verticesB, axis, out float minB, out float maxB);
@@ -225,7 +226,8 @@ namespace FlatPhysicsEngineFor2D
 
 				FlatVector edge = vb - va;
 				FlatVector axis = new FlatVector(-edge.Y, edge.X); // normalen er vinkelret på kanten
-				
+				axis = FlatMath.Normalize(axis); // normaliser normalen
+
 				Collisions.ProjectVertices(verticesA, axis, out float minA, out float maxA);
 				Collisions.ProjectVertices(verticesB, axis, out float minB, out float maxB);
 				
@@ -242,9 +244,6 @@ namespace FlatPhysicsEngineFor2D
 					normal = axis; // opdater normal
 				}
 			}
-
-			depth /= FlatMath.Length(normal); // normaliser normalen
-			normal = FlatMath.Normalize(normal); // normaliser normalen
 
 			FlatVector centerA = FindArithmeticMean(verticesA);
 			FlatVector centerB = FindArithmeticMean(verticesB);
