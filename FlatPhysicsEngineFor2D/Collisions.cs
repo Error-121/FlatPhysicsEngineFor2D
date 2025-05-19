@@ -8,8 +8,11 @@ namespace FlatPhysicsEngineFor2D
 {
 	public static class Collisions
 	{
-		public static bool IntersectPolygons(FlatVector[] verticesA, FlatVector[] verticesB)
+		public static bool IntersectPolygons(FlatVector[] verticesA, FlatVector[] verticesB, out FlatVector normal, out float depth)
 		{
+			normal = FlatVector.Zero;
+			depth = float.MaxValue; // dybden er den mindste afstand mellem de to polygoner
+
 			for (int i = 0; i < verticesA.Length; i++)
 			{
 				FlatVector va = verticesA[i];
@@ -24,6 +27,14 @@ namespace FlatPhysicsEngineFor2D
 				if (maxA < minB || maxB < minA) // hvis der ikke er overlap
 				{
 					return false; // ingen overlap
+				}
+
+				float axisDepth = MathF.Min(maxB - minA, maxA - minB); // dybden er den mindste afstand mellem de to polygoner
+
+				if (axisDepth < depth) // hvis dybden er mindre end den mindste dybde
+				{
+					depth = axisDepth; // opdater dybden
+					normal = axis; // opdater normal
 				}
 			}
 
@@ -42,9 +53,47 @@ namespace FlatPhysicsEngineFor2D
 				{
 					return false; // ingen overlap
 				}
+
+				float axisDepth = MathF.Min(maxB - minA, maxA - minB); // dybden er den mindste afstand mellem de to polygoner
+
+				if (axisDepth < depth) // hvis dybden er mindre end den mindste dybde
+				{
+					depth = axisDepth; // opdater dybden
+					normal = axis; // opdater normal
+				}
 			}
+
+			depth /= FlatMath.Length(normal); // normaliser normalen
+			normal = FlatMath.Normalize(normal); // normaliser normalen
+
+			FlatVector centerA = FindArithmeticMean(verticesA);
+			FlatVector centerB = FindArithmeticMean(verticesB);
+
+			FlatVector direction = centerB - centerA;
+
+			if (FlatMath.Dot(normal, direction) < 0f) // hvis normalen peger væk fra den anden polygon
+			{
+				normal = -normal; // inverter normalen
+			}
+
 			return true; // overlap
 		}
+
+		private static FlatVector FindArithmeticMean(FlatVector[] vertices)
+		{
+			float sumX = 0f;
+			float sumY = 0f;
+
+			for (int i = 0; i < vertices.Length; i++)
+			{
+				FlatVector v = vertices[i];
+				sumX += v.X;
+				sumY += v.Y;
+			}
+
+			return new FlatVector(sumX / (float)vertices.Length, sumY / (float)vertices.Length);
+		}
+
 
 		private static void ProjectVertices(FlatVector[] vertices, FlatVector axis, out float min, out float max)
 		{
