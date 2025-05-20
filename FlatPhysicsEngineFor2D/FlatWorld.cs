@@ -57,7 +57,7 @@ namespace FlatPhysicsEngineFor2D
 			// Movement step
 			for (int i = 0; i < this.bodyList.Count; i++)
 			{
-				this.bodyList[i].Step(time);
+				this.bodyList[i].Step(time, this.gravity);
 			}
 
 			// collision step
@@ -128,7 +128,7 @@ namespace FlatPhysicsEngineFor2D
 			{
 				if (shapeTypeB is ShapeType.Box)
 				{
-					return Collisions.IntersectPolygons( bodyA.GetTransformedVertices(), bodyB.GetTransformedVertices(), out normal, out depth);
+					return Collisions.IntersectPolygons(bodyA.Position, bodyA.GetTransformedVertices(), bodyB.Position, bodyB.GetTransformedVertices(), out normal, out depth);
 				}
 				else if (shapeTypeB is ShapeType.Circle)
 				{

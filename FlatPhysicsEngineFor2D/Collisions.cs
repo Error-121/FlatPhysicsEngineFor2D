@@ -76,9 +76,7 @@ namespace FlatPhysicsEngineFor2D
 		}
 
 
-		public static bool IntersectCirclePolygon(FlatVector circleCenter, float circleRadius,
-			FlatVector[] vertices,
-			out FlatVector normal, out float depth)
+		public static bool IntersectCirclePolygon(FlatVector circleCenter, float circleRadius, FlatVector[] vertices, out FlatVector normal, out float depth)
 		{
 			normal = FlatVector.Zero;
 			depth = float.MaxValue;
@@ -187,6 +185,72 @@ namespace FlatPhysicsEngineFor2D
 			}
 		}
 
+		public static bool IntersectPolygons(FlatVector centerA, FlatVector[] verticesA, FlatVector centerB, FlatVector[] verticesB, out FlatVector normal, out float depth)
+		{
+			normal = FlatVector.Zero;
+			depth = float.MaxValue;
+
+			for (int i = 0; i < verticesA.Length; i++)
+			{
+				FlatVector va = verticesA[i];
+				FlatVector vb = verticesA[(i + 1) % verticesA.Length];
+
+				FlatVector edge = vb - va;
+				FlatVector axis = new FlatVector(-edge.Y, edge.X);
+				axis = FlatMath.Normalize(axis);
+
+				Collisions.ProjectVertices(verticesA, axis, out float minA, out float maxA);
+				Collisions.ProjectVertices(verticesB, axis, out float minB, out float maxB);
+
+				if (minA >= maxB || minB >= maxA)
+				{
+					return false;
+				}
+
+				float axisDepth = MathF.Min(maxB - minA, maxA - minB);
+
+				if (axisDepth < depth)
+				{
+					depth = axisDepth;
+					normal = axis;
+				}
+			}
+
+			for (int i = 0; i < verticesB.Length; i++)
+			{
+				FlatVector va = verticesB[i];
+				FlatVector vb = verticesB[(i + 1) % verticesB.Length];
+
+				FlatVector edge = vb - va;
+				FlatVector axis = new FlatVector(-edge.Y, edge.X);
+				axis = FlatMath.Normalize(axis);
+
+				Collisions.ProjectVertices(verticesA, axis, out float minA, out float maxA);
+				Collisions.ProjectVertices(verticesB, axis, out float minB, out float maxB);
+
+				if (minA >= maxB || minB >= maxA)
+				{
+					return false;
+				}
+
+				float axisDepth = MathF.Min(maxB - minA, maxA - minB);
+
+				if (axisDepth < depth)
+				{
+					depth = axisDepth;
+					normal = axis;
+				}
+			}
+
+			FlatVector direction = centerB - centerA;
+
+			if (FlatMath.Dot(direction, normal) < 0f)
+			{
+				normal = -normal;
+			}
+
+			return true;
+		}
 
 		public static bool IntersectPolygons(FlatVector[] verticesA, FlatVector[] verticesB, out FlatVector normal, out float depth)
 		{

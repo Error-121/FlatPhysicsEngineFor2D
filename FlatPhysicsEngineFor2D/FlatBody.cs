@@ -146,13 +146,20 @@ namespace FlatPhysicsEngineFor2D
 			return this.transformedVertices;
 		}
 
-		public void Step(float time)
+		internal void Step(float time, FlatVector gravity)
 		{
+			if (this.isStatic)
+			{
+				return;
+			}
+
 			// force = mass * acc
 			// acc = force / mass;
 
-			FlatVector acceleration = this.force / this.mass;
-			this.linearVelocity += acceleration * time;
+			//FlatVector acceleration = this.force / this.mass;
+			//this.linearVelocity += acceleration * time;
+
+			this.linearVelocity += gravity * time;
 			this.position += this.linearVelocity * time;
 
 			this.rotation += this.rotationalVelocity * time;
@@ -184,7 +191,7 @@ namespace FlatPhysicsEngineFor2D
 			this.force = amount;
 		}
 
-		public static bool CreateCircleBody(FlatVector position, float density, float restitution, bool isStatic, float radius, out FlatBody body, out string errorMessage)
+		public static bool CreateCircleBody(float radius, FlatVector position, float density, bool isStatic, float restitution, out FlatBody body, out string errorMessage)
 		{
 			body = null;
 			errorMessage = string.Empty;
@@ -224,7 +231,7 @@ namespace FlatPhysicsEngineFor2D
 			return true;
 		}
 
-		public static bool CreateBoxBody(FlatVector position, float density, float restitution, bool isStatic, float width, float height, out FlatBody body, out string errorMessage)
+		public static bool CreateBoxBody(float width, float height, FlatVector position, float density, bool isStatic, float restitution, out FlatBody body, out string errorMessage)
 		{
 			body = null;
 			errorMessage = string.Empty;
