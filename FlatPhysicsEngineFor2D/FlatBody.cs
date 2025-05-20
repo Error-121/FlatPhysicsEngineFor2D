@@ -38,8 +38,11 @@ namespace FlatPhysicsEngineFor2D
 		private readonly FlatVector[] vertices;
 		public readonly int[] triangles;
 		private FlatVector[] transformedVertices;
-	
+		private FlatAABB aabb;
+
 		private bool transformUpdateRequired;
+		private bool aabbUpdateRequired;
+
 
 		public readonly ShapeType shapeType;
 
@@ -99,6 +102,7 @@ namespace FlatPhysicsEngineFor2D
 			}
 
 			this.transformUpdateRequired = true;
+			this.aabbUpdateRequired = true;
 		}
 
 		private static FlatVector[] CreateBoxVertices(float width, float height)
@@ -146,6 +150,48 @@ namespace FlatPhysicsEngineFor2D
 			return this.transformedVertices;
 		}
 
+		public FlatAABB GetAABB()
+		{
+			if (this.aabbUpdateRequired)
+			{
+				float minX = float.MaxValue;
+				float minY = float.MaxValue;
+				float maxX = float.MinValue;
+				float maxY = float.MinValue;
+
+				if (this.shapeType is ShapeType.Box)
+				{
+					FlatVector[] vertices = this.GetTransformedVertices();
+
+					for (int i = 0; i < vertices.Length; i++)
+					{
+						FlatVector v = vertices[i];
+
+						if (v.X < minX) { minX = v.X; }
+						if (v.X > maxX) { maxX = v.X; }
+						if (v.Y < minY) { minY = v.Y; }
+						if (v.Y > maxY) { maxY = v.Y; }
+					}
+				}
+				else if (this.shapeType is ShapeType.Circle)
+				{
+					minX = this.position.X - this.radius;
+					minY = this.position.Y - this.radius;
+					maxX = this.position.X + this.radius;
+					maxY = this.position.Y + this.radius;
+				}
+				else
+				{
+					throw new Exception("Unknown ShapeType.");
+				}
+
+				this.aabb = new FlatAABB(minX, minY, maxX, maxY);
+			}
+
+			this.aabbUpdateRequired = false;
+			return this.aabb;
+		}
+
 		internal void Step(float time, FlatVector gravity)
 		{
 			if (this.isStatic)
@@ -166,24 +212,28 @@ namespace FlatPhysicsEngineFor2D
 
 			this.force = FlatVector.Zero;
 			this.transformUpdateRequired = true;
+			this.aabbUpdateRequired = true;
 		}
 
 		public void Move(FlatVector amount) 
 		{
 			this.position += amount;
 			this.transformUpdateRequired = true;
+			this.aabbUpdateRequired = true;
 		}
 
 		public void MoveTo(FlatVector position)
 		{
 			this.position = position;
 			this.transformUpdateRequired = true;
+			this.aabbUpdateRequired = true;
 		}
 
 		public void Rotate(float amount)
 		{
 			this.rotation += amount;
 			this.transformUpdateRequired = true;
+			this.aabbUpdateRequired = true;
 		}
 
 		public void AddForce(FlatVector amount)
