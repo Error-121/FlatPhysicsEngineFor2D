@@ -10,10 +10,10 @@ namespace FlatPhysicsEngineFor2D
 	{
 		public static bool IntersectCirclePolygon(FlatVector circleCenter, float circleRadius, FlatVector polygonCenter, FlatVector[] vertices, out FlatVector normal, out float depth)
 		{
-			normal = FlatVector.Zero;
+			normal = FlatVector._zero;
 			depth = float.MaxValue;
 
-			FlatVector axis = FlatVector.Zero;
+			FlatVector axis = FlatVector._zero;
 			float axisDepth = 0f;
 			float minA, maxA, minB, maxB;
 
@@ -23,7 +23,7 @@ namespace FlatPhysicsEngineFor2D
 				FlatVector vb = vertices[(i + 1) % vertices.Length];
 
 				FlatVector edge = vb - va;
-				axis = new FlatVector(-edge.Y, edge.X);
+				axis = new FlatVector(-edge._Y, edge._X);
 				axis = FlatMath.Normalize(axis);
 
 				Collisions.ProjectVertices(vertices, axis, out minA, out maxA);
@@ -78,10 +78,10 @@ namespace FlatPhysicsEngineFor2D
 
 		public static bool IntersectCirclePolygon(FlatVector circleCenter, float circleRadius, FlatVector[] vertices, out FlatVector normal, out float depth)
 		{
-			normal = FlatVector.Zero;
+			normal = FlatVector._zero;
 			depth = float.MaxValue;
 
-			FlatVector axis = FlatVector.Zero;
+			FlatVector axis = FlatVector._zero;
 			float axisDepth = 0f;
 			float minA, maxA, minB, maxB;
 
@@ -91,7 +91,7 @@ namespace FlatPhysicsEngineFor2D
 				FlatVector vb = vertices[(i + 1) % vertices.Length];
 
 				FlatVector edge = vb - va;
-				axis = new FlatVector(-edge.Y, edge.X);
+				axis = new FlatVector(-edge._Y, edge._X);
 				axis = FlatMath.Normalize(axis);
 
 				Collisions.ProjectVertices(vertices, axis, out minA, out maxA);
@@ -187,7 +187,7 @@ namespace FlatPhysicsEngineFor2D
 
 		public static bool IntersectPolygons(FlatVector centerA, FlatVector[] verticesA, FlatVector centerB, FlatVector[] verticesB, out FlatVector normal, out float depth)
 		{
-			normal = FlatVector.Zero;
+			normal = FlatVector._zero;
 			depth = float.MaxValue;
 
 			for (int i = 0; i < verticesA.Length; i++)
@@ -196,7 +196,7 @@ namespace FlatPhysicsEngineFor2D
 				FlatVector vb = verticesA[(i + 1) % verticesA.Length];
 
 				FlatVector edge = vb - va;
-				FlatVector axis = new FlatVector(-edge.Y, edge.X);
+				FlatVector axis = new FlatVector(-edge._Y, edge._X);
 				axis = FlatMath.Normalize(axis);
 
 				Collisions.ProjectVertices(verticesA, axis, out float minA, out float maxA);
@@ -222,7 +222,7 @@ namespace FlatPhysicsEngineFor2D
 				FlatVector vb = verticesB[(i + 1) % verticesB.Length];
 
 				FlatVector edge = vb - va;
-				FlatVector axis = new FlatVector(-edge.Y, edge.X);
+				FlatVector axis = new FlatVector(-edge._Y, edge._X);
 				axis = FlatMath.Normalize(axis);
 
 				Collisions.ProjectVertices(verticesA, axis, out float minA, out float maxA);
@@ -254,7 +254,7 @@ namespace FlatPhysicsEngineFor2D
 
 		public static bool IntersectPolygons(FlatVector[] verticesA, FlatVector[] verticesB, out FlatVector normal, out float depth)
 		{
-			normal = FlatVector.Zero;
+			normal = FlatVector._zero;
 			depth = float.MaxValue; // dybden er den mindste afstand mellem de to polygoner
 
 			for (int i = 0; i < verticesA.Length; i++)
@@ -263,7 +263,7 @@ namespace FlatPhysicsEngineFor2D
 				FlatVector vb = verticesA[(i + 1) % verticesA.Length];
 
 				FlatVector edge = vb - va;
-				FlatVector axis = new FlatVector(-edge.Y, edge.X); // normalen er vinkelret på kanten
+				FlatVector axis = new FlatVector(-edge._Y, edge._X); // normalen er vinkelret på kanten
 				axis = FlatMath.Normalize(axis); // normaliser normalen
 
 				Collisions.ProjectVertices(verticesA, axis, out float minA, out float maxA);
@@ -289,7 +289,7 @@ namespace FlatPhysicsEngineFor2D
 				FlatVector vb = verticesB[(i + 1) % verticesB.Length];
 
 				FlatVector edge = vb - va;
-				FlatVector axis = new FlatVector(-edge.Y, edge.X); // normalen er vinkelret på kanten
+				FlatVector axis = new FlatVector(-edge._Y, edge._X); // normalen er vinkelret på kanten
 				axis = FlatMath.Normalize(axis); // normaliser normalen
 
 				Collisions.ProjectVertices(verticesA, axis, out float minA, out float maxA);
@@ -330,8 +330,8 @@ namespace FlatPhysicsEngineFor2D
 			for (int i = 0; i < vertices.Length; i++)
 			{
 				FlatVector v = vertices[i];
-				sumX += v.X;
-				sumY += v.Y;
+				sumX += v._X;
+				sumY += v._Y;
 			}
 
 			return new FlatVector(sumX / (float)vertices.Length, sumY / (float)vertices.Length);
@@ -355,7 +355,7 @@ namespace FlatPhysicsEngineFor2D
 
 		public static bool IntersectCircles(FlatVector centerA, float radiusA, FlatVector centerB, float radiusB, out FlatVector normal, out float depth)
 		{
-			normal = FlatVector.Zero;
+			normal = FlatVector._zero;
 			depth = 0f;
 
 			float distance = FlatMath.Distance(centerA, centerB);

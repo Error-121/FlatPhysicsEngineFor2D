@@ -8,19 +8,19 @@ namespace FlatPhysicsEngineFor2D
 {
 	public readonly struct FlatAABB
 	{
-		public readonly FlatVector Min;
-		public readonly FlatVector Max;
+		public readonly FlatVector _min;
+		public readonly FlatVector _max;
 
 		public FlatAABB(FlatVector min, FlatVector max)
 		{
-			this.Min = min;
-			this.Max = max;
+			this._min = min;
+			this._max = max;
 		}
 
 		public FlatAABB(float minX, float minY, float maxX, float maxY)
 		{
-			this.Min = new FlatVector(minX, minY);
-			this.Max = new FlatVector(maxX, maxY);
+			this._min = new FlatVector(minX, minY);
+			this._max = new FlatVector(maxX, maxY);
 		}
 	}
 }

@@ -2,57 +2,57 @@
 {
     public class FlatVector
     {
-        public readonly float X;
-		public readonly float Y;
+        public readonly float _X;
+		public readonly float _Y;
 
-		public static readonly FlatVector Zero = new FlatVector(0f, 0f);
+		public static readonly FlatVector _zero = new FlatVector(0f, 0f);
 
 		public FlatVector(float x, float y)
 		{
-			X = x;
-			Y = y;
+			_X = x;
+			_Y = y;
 		}
 
 		public static FlatVector operator +(FlatVector a, FlatVector b)
 		{
-			return new FlatVector(a.X + b.X, a.Y + b.Y);
+			return new FlatVector(a._X + b._X, a._Y + b._Y);
 		}
 
 		public static FlatVector operator -(FlatVector a, FlatVector b)
 		{
-			return new FlatVector(a.X - b.X, a.Y - b.Y);
+			return new FlatVector(a._X - b._X, a._Y - b._Y);
 		}
 
 		public static FlatVector operator -(FlatVector vector)
 		{
-			return new FlatVector(-vector.X, -vector.Y);
+			return new FlatVector(-vector._X, -vector._Y);
 		}
 
 		public static FlatVector operator *(FlatVector vector, float scalar)
 		{
-			return new FlatVector(vector.X * scalar, vector.Y * scalar);
+			return new FlatVector(vector._X * scalar, vector._Y * scalar);
 		}
 
 		public static FlatVector operator *(float scalar, FlatVector vector)
 		{
-			return new FlatVector(vector.X * scalar, vector.Y * scalar);
+			return new FlatVector(vector._X * scalar, vector._Y * scalar);
 		}
 
 		public static FlatVector operator /(FlatVector vector, float scalar)
 		{
-			return new FlatVector(vector.X / scalar, vector.Y / scalar);
+			return new FlatVector(vector._X / scalar, vector._Y / scalar);
 		}
 
 		internal static FlatVector Transform(FlatVector vector, FlatTransform transform)
 		{
 			return new FlatVector(
-				transform.cos * vector.X - transform.sin * vector.Y + transform.positionX,
-				transform.sin * vector.X + transform.cos * vector.Y + transform.positionY );
+				transform._cos * vector._X - transform._sin * vector._Y + transform._positionX,
+				transform._sin * vector._X + transform._cos * vector._Y + transform._positionY );
 		}
 
 		public bool Equals(FlatVector other)
 		{
-			return X == other.X && Y == other.Y;
+			return _X == other._X && _Y == other._Y;
 		}
 
 		public override bool Equals(object obj)
@@ -66,12 +66,12 @@
 
 		public override int GetHashCode()
 		{
-			return (this.X, this.Y).GetHashCode();
+			return (this._X, this._Y).GetHashCode();
 		}
 
 		public override string ToString()
 		{
-			return $"(X: {this.X}, Y: {this.Y})";
+			return $"(X: {this._X}, Y: {this._Y})";
 		}
 	}
 }

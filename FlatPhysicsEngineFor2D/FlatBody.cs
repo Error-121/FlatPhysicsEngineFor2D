@@ -14,95 +14,95 @@ namespace FlatPhysicsEngineFor2D
 
 	public sealed class FlatBody
 	{
-		private FlatVector position;
-		private FlatVector linearVelocity;
-		private float rotation;
-		private float rotationalVelocity;
+		private FlatVector _position;
+		private FlatVector _linearVelocity;
+		private float _rotation;
+		private float _rotationalVelocity;
 
-		private FlatVector force;
+		private FlatVector _force;
 
 		//everything below can be moved to a separate class
-		public readonly float density;
-		public readonly float mass;
-		public readonly float invMass;
-		public readonly float restitution;
-		public readonly float area;
+		public readonly float _density;
+		public readonly float _mass;
+		public readonly float _invMass;
+		public readonly float _restitution;
+		public readonly float _area;
 
-		public readonly bool isStatic;
+		public readonly bool _isStatic;
 
-		public readonly float radius;
-		public readonly float width;
-		public readonly float height;
+		public readonly float _radius;
+		public readonly float _width;
+		public readonly float _height;
 		//everything above can be moved to a separate class
 
-		private readonly FlatVector[] vertices;
-		public readonly int[] triangles;
-		private FlatVector[] transformedVertices;
-		private FlatAABB aabb;
+		private readonly FlatVector[] _vertices;
+		public readonly int[] _triangles;
+		private FlatVector[] _transformedVertices;
+		private FlatAABB _aabb;
 
-		private bool transformUpdateRequired;
-		private bool aabbUpdateRequired;
+		private bool _transformUpdateRequired;
+		private bool _aabbUpdateRequired;
 
 
 		public readonly ShapeType shapeType;
 
 		public FlatVector Position 
 		{
-			get { return this.position; }
+			get { return this._position; }
 		}
 
 		public FlatVector LinearVelocity
 		{
-			get { return this.linearVelocity; }
-			internal set { this.linearVelocity = value; }
+			get { return this._linearVelocity; }
+			internal set { this._linearVelocity = value; }
 		}
 
 		private FlatBody(FlatVector position, float density, float mass, float restitution, float area, bool isStatic, float radius, float width, float height, ShapeType shapeTybe) 
 		{
-			this.position = position;
-			this.linearVelocity = FlatVector.Zero;
-			this.rotation = 0f;
-			this.rotationalVelocity = 0f;
+			this._position = position;
+			this._linearVelocity = FlatVector._zero;
+			this._rotation = 0f;
+			this._rotationalVelocity = 0f;
 
-			this.force = FlatVector.Zero;
+			this._force = FlatVector._zero;
 
-			this.density = density;
-			this.mass = mass;
-			this.restitution = restitution;
-			this.area = area;
+			this._density = density;
+			this._mass = mass;
+			this._restitution = restitution;
+			this._area = area;
 			
-			this.isStatic = isStatic;
-			this.radius = radius;
-			this.width = width;
-			this.height = height;
+			this._isStatic = isStatic;
+			this._radius = radius;
+			this._width = width;
+			this._height = height;
 			this.shapeType = shapeTybe;
 
-			if (!this.isStatic)
+			if (!this._isStatic)
 			{
-				this.invMass = 1f / this.mass;
+				this._invMass = 1f / this._mass;
 			}
 			else
 			{
-				this.invMass = 0f;
+				this._invMass = 0f;
 			}
 
 			if (this.shapeType is ShapeType.Box)
 			{
-				this.vertices = FlatBody.CreateBoxVertices(this.width, this.height);
-				this.triangles = FlatBody.CreateBoxTriangles();
-				this.transformedVertices = new FlatVector[this.vertices.Length];
+				this._vertices = FlatBody.CreateBoxVertices(this._width, this._height);
+				this._triangles = FlatBody.CreateBoxTriangles();
+				this._transformedVertices = new FlatVector[this._vertices.Length];
 
 			}
 			else
 			{
-				this.vertices = null;
-				triangles = null;
-				this.transformedVertices = null;
+				this._vertices = null;
+				_triangles = null;
+				this._transformedVertices = null;
 
 			}
 
-			this.transformUpdateRequired = true;
-			this.aabbUpdateRequired = true;
+			this._transformUpdateRequired = true;
+			this._aabbUpdateRequired = true;
 		}
 
 		private static FlatVector[] CreateBoxVertices(float width, float height)
@@ -135,24 +135,24 @@ namespace FlatPhysicsEngineFor2D
 
 		public FlatVector[] GetTransformedVertices()
 		{
-			if (this.transformUpdateRequired)
+			if (this._transformUpdateRequired)
 			{
-				FlatTransform transform = new FlatTransform(this.position, this.rotation);
+				FlatTransform transform = new FlatTransform(this._position, this._rotation);
 
-				for (int i = 0; i < this.vertices.Length; i++)
+				for (int i = 0; i < this._vertices.Length; i++)
 				{
-					FlatVector v = this.vertices[i];
-					this.transformedVertices[i] = FlatVector.Transform(v, transform);
+					FlatVector v = this._vertices[i];
+					this._transformedVertices[i] = FlatVector.Transform(v, transform);
 				}
 			}
 
-			this.transformUpdateRequired = false;
-			return this.transformedVertices;
+			this._transformUpdateRequired = false;
+			return this._transformedVertices;
 		}
 
 		public FlatAABB GetAABB()
 		{
-			if (this.aabbUpdateRequired)
+			if (this._aabbUpdateRequired)
 			{
 				float minX = float.MaxValue;
 				float minY = float.MaxValue;
@@ -167,37 +167,39 @@ namespace FlatPhysicsEngineFor2D
 					{
 						FlatVector v = vertices[i];
 
-						if (v.X < minX) { minX = v.X; }
-						if (v.X > maxX) { maxX = v.X; }
-						if (v.Y < minY) { minY = v.Y; }
-						if (v.Y > maxY) { maxY = v.Y; }
+						if (v._X < minX) { minX = v._X; }
+						if (v._X > maxX) { maxX = v._X; }
+						if (v._Y < minY) { minY = v._Y; }
+						if (v._Y > maxY) { maxY = v._Y; }
 					}
 				}
 				else if (this.shapeType is ShapeType.Circle)
 				{
-					minX = this.position.X - this.radius;
-					minY = this.position.Y - this.radius;
-					maxX = this.position.X + this.radius;
-					maxY = this.position.Y + this.radius;
+					minX = this._position._X - this._radius;
+					minY = this._position._Y - this._radius;
+					maxX = this._position._X + this._radius;
+					maxY = this._position._Y + this._radius;
 				}
 				else
 				{
 					throw new Exception("Unknown ShapeType.");
 				}
 
-				this.aabb = new FlatAABB(minX, minY, maxX, maxY);
+				this._aabb = new FlatAABB(minX, minY, maxX, maxY);
 			}
 
-			this.aabbUpdateRequired = false;
-			return this.aabb;
+			this._aabbUpdateRequired = false;
+			return this._aabb;
 		}
 
-		internal void Step(float time, FlatVector gravity)
+		internal void Step(float time, FlatVector gravity, int iterations)
 		{
-			if (this.isStatic)
+			if (this._isStatic)
 			{
 				return;
 			}
+
+			time /= (float)iterations;
 
 			// force = mass * acc
 			// acc = force / mass;
@@ -205,40 +207,40 @@ namespace FlatPhysicsEngineFor2D
 			//FlatVector acceleration = this.force / this.mass;
 			//this.linearVelocity += acceleration * time;
 
-			this.linearVelocity += gravity * time;
-			this.position += this.linearVelocity * time;
+			this._linearVelocity += gravity * time;
+			this._position += this._linearVelocity * time;
 
-			this.rotation += this.rotationalVelocity * time;
+			this._rotation += this._rotationalVelocity * time;
 
-			this.force = FlatVector.Zero;
-			this.transformUpdateRequired = true;
-			this.aabbUpdateRequired = true;
+			this._force = FlatVector._zero;
+			this._transformUpdateRequired = true;
+			this._aabbUpdateRequired = true;
 		}
 
 		public void Move(FlatVector amount) 
 		{
-			this.position += amount;
-			this.transformUpdateRequired = true;
-			this.aabbUpdateRequired = true;
+			this._position += amount;
+			this._transformUpdateRequired = true;
+			this._aabbUpdateRequired = true;
 		}
 
 		public void MoveTo(FlatVector position)
 		{
-			this.position = position;
-			this.transformUpdateRequired = true;
-			this.aabbUpdateRequired = true;
+			this._position = position;
+			this._transformUpdateRequired = true;
+			this._aabbUpdateRequired = true;
 		}
 
 		public void Rotate(float amount)
 		{
-			this.rotation += amount;
-			this.transformUpdateRequired = true;
-			this.aabbUpdateRequired = true;
+			this._rotation += amount;
+			this._transformUpdateRequired = true;
+			this._aabbUpdateRequired = true;
 		}
 
 		public void AddForce(FlatVector amount)
 		{
-			this.force = amount;
+			this._force = amount;
 		}
 
 		public static bool CreateCircleBody(float radius, FlatVector position, float density, bool isStatic, float restitution, out FlatBody body, out string errorMessage)
@@ -248,25 +250,25 @@ namespace FlatPhysicsEngineFor2D
 
 			float area = radius * radius * MathF.PI;
 
-			if (area < FlatWorld.MinBodySize)
+			if (area < FlatWorld._minBodySize)
 			{
-				errorMessage = $"Circle radius is too small. Min circle area is {FlatWorld.MinBodySize}";
+				errorMessage = $"Circle radius is too small. Min circle area is {FlatWorld._minBodySize}";
 				return false;
 			}
-			if (area > FlatWorld.MaxBodySize)
+			if (area > FlatWorld._maxBodySize)
 			{
-				errorMessage = $"Circle radius is too large. Max circle area is {FlatWorld.MaxBodySize}";
+				errorMessage = $"Circle radius is too large. Max circle area is {FlatWorld._maxBodySize}";
 				return false;
 			}
 
-			if (density < FlatWorld.MinDensity)
+			if (density < FlatWorld._minDensity)
 			{
-				errorMessage = $"Circle density is too small. Min circle density is {FlatWorld.MinDensity}";
+				errorMessage = $"Circle density is too small. Min circle density is {FlatWorld._minDensity}";
 				return false;
 			}
-			if (density > FlatWorld.MaxDensity)
+			if (density > FlatWorld._maxDensity)
 			{
-				errorMessage = $"Circle density is too large. Max circle density is {FlatWorld.MaxDensity}";
+				errorMessage = $"Circle density is too large. Max circle density is {FlatWorld._maxDensity}";
 				return false;
 			}
 
@@ -286,24 +288,24 @@ namespace FlatPhysicsEngineFor2D
 			body = null;
 			errorMessage = string.Empty;
 			float area = width * height;
-			if (area < FlatWorld.MinBodySize)
+			if (area < FlatWorld._minBodySize)
 			{
-				errorMessage = $"Box area is too small. Min box area is {FlatWorld.MinBodySize}";
+				errorMessage = $"Box area is too small. Min box area is {FlatWorld._minBodySize}";
 				return false;
 			}
-			if (area > FlatWorld.MaxBodySize)
+			if (area > FlatWorld._maxBodySize)
 			{
-				errorMessage = $"Box area is too large. Max box area is {FlatWorld.MaxBodySize}";
+				errorMessage = $"Box area is too large. Max box area is {FlatWorld._maxBodySize}";
 				return false;
 			}
-			if (density < FlatWorld.MinDensity)
+			if (density < FlatWorld._minDensity)
 			{
-				errorMessage = $"Box density is too small. Min box density is {FlatWorld.MinDensity}";
+				errorMessage = $"Box density is too small. Min box density is {FlatWorld._minDensity}";
 				return false;
 			}
-			if (density > FlatWorld.MaxDensity)
+			if (density > FlatWorld._maxDensity)
 			{
-				errorMessage = $"Box density is too large. Max box density is {FlatWorld.MaxDensity}";
+				errorMessage = $"Box density is too large. Max box density is {FlatWorld._maxDensity}";
 				return false;
 			}
 			restitution = FlatMath.Clamp(restitution, 0f, 1f);

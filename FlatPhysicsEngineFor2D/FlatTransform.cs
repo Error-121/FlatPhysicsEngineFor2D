@@ -8,27 +8,27 @@ namespace FlatPhysicsEngineFor2D
 {
 	internal readonly struct FlatTransform
 	{
-		public readonly float positionX;
-		public readonly float positionY;
-		public readonly float sin;
-		public readonly float cos;
+		public readonly float _positionX;
+		public readonly float _positionY;
+		public readonly float _sin;
+		public readonly float _cos;
 
 		public readonly static FlatTransform Zero = new FlatTransform(0f, 0f, 0f);
 
 		public FlatTransform(FlatVector position, float angle)
 		{
-			this.positionX = position.X;
-			this.positionY = position.Y;
-			this.sin = MathF.Sin(angle);
-			this.cos = MathF.Cos(angle);
+			this._positionX = position._X;
+			this._positionY = position._Y;
+			this._sin = MathF.Sin(angle);
+			this._cos = MathF.Cos(angle);
 		}
 
 		public FlatTransform(float x, float y, float angle)
 		{
-			this.positionX = x;
-			this.positionY = y;
-			this.sin = MathF.Sin(angle);
-			this.cos = MathF.Cos(angle);
+			this._positionX = x;
+			this._positionY = y;
+			this._sin = MathF.Sin(angle);
+			this._cos = MathF.Cos(angle);
 		}
 	}
 }
