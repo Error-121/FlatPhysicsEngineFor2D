@@ -20,6 +20,7 @@ namespace FlatPhysicsEngineFor2D
 
 		private FlatVector _gravity;
 		private List<FlatBody> _bodyList;
+		private List<FlatManifold> _contactList;
 
 		public int BodyCount
 		{
@@ -30,6 +31,7 @@ namespace FlatPhysicsEngineFor2D
 		{
 			this._gravity = new FlatVector(0f, -9.81f);
 			this._bodyList = new List<FlatBody>();
+			this._contactList = new List<FlatManifold>();
 		}
 
 		public void AddBody(FlatBody body)
@@ -69,6 +71,9 @@ namespace FlatPhysicsEngineFor2D
 					this._bodyList[i].Step(time, this._gravity, iterations);
 				}
 
+				// Clear contact list
+				this._contactList.Clear();
+
 				// collision step
 				for (int i = 0; i < this._bodyList.Count - 1; i++)
 				{
@@ -99,15 +104,28 @@ namespace FlatPhysicsEngineFor2D
 								bodyB.Move(normal * depth / 2f);
 							}
 
-							this.ResolveCollision(bodyA, bodyB, normal, depth);
+							FlatManifold contact = new FlatManifold(bodyA, bodyB, normal, depth, FlatVector._zero, FlatVector._zero, 0);
+							this._contactList.Add(contact);
 						}
 					}
 				}
+
+				for (int i = 0; i < this._contactList.Count; i++)
+				{
+					FlatManifold contact = this._contactList[i];
+					this.ResolveCollision(in contact);
+				}
+
 			}
 		}
 
-		public void ResolveCollision(FlatBody bodyA, FlatBody bodyB, FlatVector normal, float depth)
+		public void ResolveCollision(in FlatManifold contact)
 		{
+			FlatBody bodyA = contact._bodyA;
+			FlatBody bodyB = contact._bodyB;
+			FlatVector normal = contact._normal;
+			float depth = contact._depth;
+
 			FlatVector relativeVelocity = bodyB.LinearVelocity - bodyA.LinearVelocity;
 
 			if (FlatMath.Dot(relativeVelocity, normal) > 0f)
