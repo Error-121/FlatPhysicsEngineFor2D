@@ -22,6 +22,8 @@ namespace FlatPhysicsEngineFor2D
 		private List<FlatBody> _bodyList;
 		private List<FlatManifold> _contactList;
 
+		public List<FlatVector> _ContactPointsList;
+
 		public int BodyCount
 		{
 			get { return this._bodyList.Count; }
@@ -32,6 +34,8 @@ namespace FlatPhysicsEngineFor2D
 			this._gravity = new FlatVector(0f, -9.81f);
 			this._bodyList = new List<FlatBody>();
 			this._contactList = new List<FlatManifold>();
+
+			this._ContactPointsList = new List<FlatVector>();
 		}
 
 		public void AddBody(FlatBody body)
@@ -61,6 +65,8 @@ namespace FlatPhysicsEngineFor2D
 		{
 			iterations = FlatMath.Clamp(iterations, FlatWorld._minIterations, FlatWorld._maxIterations);
 
+			this._ContactPointsList.Clear();
+
 			for (int it = 0; it < iterations; it++)
 			{
 
@@ -88,7 +94,7 @@ namespace FlatPhysicsEngineFor2D
 							continue;
 						}
 
-						if (this.Collide(bodyA, bodyB, out FlatVector normal, out float depth))
+						if (Collisions.Collide(bodyA, bodyB, out FlatVector normal, out float depth))
 						{
 							if (bodyA._isStatic)
 							{
@@ -104,7 +110,8 @@ namespace FlatPhysicsEngineFor2D
 								bodyB.Move(normal * depth / 2f);
 							}
 
-							FlatManifold contact = new FlatManifold(bodyA, bodyB, normal, depth, FlatVector._zero, FlatVector._zero, 0);
+							Collisions.FindContactPoint(bodyA, bodyB, out FlatVector contactOne, out FlatVector contactTwo, out int contactCount);
+							FlatManifold contact = new FlatManifold(bodyA, bodyB, normal, depth, contactOne, contactTwo, contactCount);
 							this._contactList.Add(contact);
 						}
 					}
@@ -114,6 +121,16 @@ namespace FlatPhysicsEngineFor2D
 				{
 					FlatManifold contact = this._contactList[i];
 					this.ResolveCollision(in contact);
+
+					if (contact._contactCount > 0)
+					{
+						this._ContactPointsList.Add(contact._contactOne);
+
+						if (contact._contactCount > 1)
+						{
+							this._ContactPointsList.Add(contact._contactTwo);
+						}
+					}
 				}
 
 			}
@@ -142,43 +159,6 @@ namespace FlatPhysicsEngineFor2D
 
 			bodyA.LinearVelocity -= impulse * bodyA._invMass;
 			bodyB.LinearVelocity += impulse * bodyB._invMass;
-		}
-
-		public bool Collide(FlatBody bodyA, FlatBody bodyB, out FlatVector normal, out float depth)
-		{
-			normal = FlatVector._zero;
-			depth = 0f;
-
-			ShapeType shapeTypeA = bodyA.shapeType;
-			ShapeType shapeTypeB = bodyB.shapeType;
-
-			if (shapeTypeA is ShapeType.Box)
-			{
-				if (shapeTypeB is ShapeType.Box)
-				{
-					return Collisions.IntersectPolygons(bodyA.Position, bodyA.GetTransformedVertices(), bodyB.Position, bodyB.GetTransformedVertices(), out normal, out depth);
-				}
-				else if (shapeTypeB is ShapeType.Circle)
-				{
-					bool result = Collisions.IntersectCirclePolygon(bodyB.Position, bodyB._radius, bodyA.Position, bodyA.GetTransformedVertices(), out normal, out depth);
-
-					normal = -normal;
-					return result;
-				}
-			}
-			else if (shapeTypeA is ShapeType.Circle)
-			{
-				if (shapeTypeB is ShapeType.Box)
-				{
-					return Collisions.IntersectCirclePolygon(bodyA.Position, bodyA._radius, bodyB.Position, bodyB.GetTransformedVertices(), out normal, out depth);
-				}
-				else if (shapeTypeB is ShapeType.Circle)
-				{
-					return Collisions.IntersectCircles(bodyA.Position, bodyA._radius, bodyB.Position, bodyB._radius, out normal, out depth);
-				}
-			}
-
-			return false;
 		}
 
 	}

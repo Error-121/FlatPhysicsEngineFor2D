@@ -8,6 +8,83 @@ namespace FlatPhysicsEngineFor2D
 {
 	public static class Collisions
 	{
+		public static void FindContactPoint(FlatBody bodyA, FlatBody bodyB, out FlatVector contactOne, out FlatVector contactTwo, out int contactCount)
+		{
+			contactOne = FlatVector._zero;
+			contactTwo = FlatVector._zero;
+			contactCount = 0;
+
+			ShapeType shapeTypeA = bodyA.shapeType;
+			ShapeType shapeTypeB = bodyB.shapeType;
+
+			if (shapeTypeA is ShapeType.Box)
+			{
+				if (shapeTypeB is ShapeType.Box)
+				{
+					
+				}
+				else if (shapeTypeB is ShapeType.Circle)
+				{
+					
+				}
+			}
+			else if (shapeTypeA is ShapeType.Circle)
+			{
+				if (shapeTypeB is ShapeType.Box)
+				{
+					
+				}
+				else if (shapeTypeB is ShapeType.Circle)
+				{
+					Collisions.FindContactPoint(bodyB.Position, bodyB._radius, bodyA.Position, out contactOne);
+					contactCount = 1;
+				}
+			}
+		}
+
+		private static void FindContactPoint(FlatVector centerA, float radiusA, FlatVector centerB, out FlatVector contactPoint)
+		{
+			FlatVector ab = FlatMath.Normalize(centerB - centerA);
+			contactPoint = centerA + ab * radiusA;
+		}
+
+		public static bool Collide(FlatBody bodyA, FlatBody bodyB, out FlatVector normal, out float depth)
+		{
+			normal = FlatVector._zero;
+			depth = 0f;
+
+			ShapeType shapeTypeA = bodyA.shapeType;
+			ShapeType shapeTypeB = bodyB.shapeType;
+
+			if (shapeTypeA is ShapeType.Box)
+			{
+				if (shapeTypeB is ShapeType.Box)
+				{
+					return Collisions.IntersectPolygons(bodyA.Position, bodyA.GetTransformedVertices(), bodyB.Position, bodyB.GetTransformedVertices(), out normal, out depth);
+				}
+				else if (shapeTypeB is ShapeType.Circle)
+				{
+					bool result = Collisions.IntersectCirclePolygon(bodyB.Position, bodyB._radius, bodyA.Position, bodyA.GetTransformedVertices(), out normal, out depth);
+
+					normal = -normal;
+					return result;
+				}
+			}
+			else if (shapeTypeA is ShapeType.Circle)
+			{
+				if (shapeTypeB is ShapeType.Box)
+				{
+					return Collisions.IntersectCirclePolygon(bodyA.Position, bodyA._radius, bodyB.Position, bodyB.GetTransformedVertices(), out normal, out depth);
+				}
+				else if (shapeTypeB is ShapeType.Circle)
+				{
+					return Collisions.IntersectCircles(bodyA.Position, bodyA._radius, bodyB.Position, bodyB._radius, out normal, out depth);
+				}
+			}
+
+			return false;
+		}
+
 		public static bool IntersectCirclePolygon(FlatVector circleCenter, float circleRadius, FlatVector polygonCenter, FlatVector[] vertices, out FlatVector normal, out float depth)
 		{
 			normal = FlatVector._zero;
@@ -64,76 +141,6 @@ namespace FlatPhysicsEngineFor2D
 				depth = axisDepth;
 				normal = axis;
 			}
-
-			FlatVector direction = polygonCenter - circleCenter;
-
-			if (FlatMath.Dot(direction, normal) < 0f)
-			{
-				normal = -normal;
-			}
-
-			return true;
-		}
-
-
-		public static bool IntersectCirclePolygon(FlatVector circleCenter, float circleRadius, FlatVector[] vertices, out FlatVector normal, out float depth)
-		{
-			normal = FlatVector._zero;
-			depth = float.MaxValue;
-
-			FlatVector axis = FlatVector._zero;
-			float axisDepth = 0f;
-			float minA, maxA, minB, maxB;
-
-			for (int i = 0; i < vertices.Length; i++)
-			{
-				FlatVector va = vertices[i];
-				FlatVector vb = vertices[(i + 1) % vertices.Length];
-
-				FlatVector edge = vb - va;
-				axis = new FlatVector(-edge._Y, edge._X);
-				axis = FlatMath.Normalize(axis);
-
-				Collisions.ProjectVertices(vertices, axis, out minA, out maxA);
-				Collisions.ProjectCircle(circleCenter, circleRadius, axis, out minB, out maxB);
-
-				if (minA >= maxB || minB >= maxA)
-				{
-					return false;
-				}
-
-				axisDepth = MathF.Min(maxB - minA, maxA - minB);
-
-				if (axisDepth < depth)
-				{
-					depth = axisDepth;
-					normal = axis;
-				}
-			}
-
-			int cpIndex = Collisions.FindClosestPointOnPolygon(circleCenter, vertices);
-			FlatVector cp = vertices[cpIndex];
-
-			axis = cp - circleCenter;
-			axis = FlatMath.Normalize(axis);
-
-			Collisions.ProjectVertices(vertices, axis, out minA, out maxA);
-			Collisions.ProjectCircle(circleCenter, circleRadius, axis, out minB, out maxB);
-
-			if (minA >= maxB || minB >= maxA)
-			{
-				return false;
-			}
-
-			axisDepth = MathF.Min(maxB - minA, maxA - minB);
-
-			if (axisDepth < depth)
-			{
-				depth = axisDepth;
-				normal = axis;
-			}
-
-			FlatVector polygonCenter = Collisions.FindArithmeticMean(vertices);
 
 			FlatVector direction = polygonCenter - circleCenter;
 
@@ -251,92 +258,6 @@ namespace FlatPhysicsEngineFor2D
 
 			return true;
 		}
-
-		public static bool IntersectPolygons(FlatVector[] verticesA, FlatVector[] verticesB, out FlatVector normal, out float depth)
-		{
-			normal = FlatVector._zero;
-			depth = float.MaxValue; // dybden er den mindste afstand mellem de to polygoner
-
-			for (int i = 0; i < verticesA.Length; i++)
-			{
-				FlatVector va = verticesA[i];
-				FlatVector vb = verticesA[(i + 1) % verticesA.Length];
-
-				FlatVector edge = vb - va;
-				FlatVector axis = new FlatVector(-edge._Y, edge._X); // normalen er vinkelret på kanten
-				axis = FlatMath.Normalize(axis); // normaliser normalen
-
-				Collisions.ProjectVertices(verticesA, axis, out float minA, out float maxA);
-				Collisions.ProjectVertices(verticesB, axis, out float minB, out float maxB);
-
-				if (maxA < minB || maxB < minA) // hvis der ikke er overlap
-				{
-					return false; // ingen overlap
-				}
-
-				float axisDepth = MathF.Min(maxB - minA, maxA - minB); // dybden er den mindste afstand mellem de to polygoner
-
-				if (axisDepth < depth) // hvis dybden er mindre end den mindste dybde
-				{
-					depth = axisDepth; // opdater dybden
-					normal = axis; // opdater normal
-				}
-			}
-
-			for (int i = 0; i < verticesB.Length; i++)
-			{
-				FlatVector va = verticesB[i];
-				FlatVector vb = verticesB[(i + 1) % verticesB.Length];
-
-				FlatVector edge = vb - va;
-				FlatVector axis = new FlatVector(-edge._Y, edge._X); // normalen er vinkelret på kanten
-				axis = FlatMath.Normalize(axis); // normaliser normalen
-
-				Collisions.ProjectVertices(verticesA, axis, out float minA, out float maxA);
-				Collisions.ProjectVertices(verticesB, axis, out float minB, out float maxB);
-				
-				if (maxA < minB || maxB < minA) // hvis der ikke er overlap
-				{
-					return false; // ingen overlap
-				}
-
-				float axisDepth = MathF.Min(maxB - minA, maxA - minB); // dybden er den mindste afstand mellem de to polygoner
-
-				if (axisDepth < depth) // hvis dybden er mindre end den mindste dybde
-				{
-					depth = axisDepth; // opdater dybden
-					normal = axis; // opdater normal
-				}
-			}
-
-			FlatVector centerA = FindArithmeticMean(verticesA);
-			FlatVector centerB = FindArithmeticMean(verticesB);
-
-			FlatVector direction = centerB - centerA;
-
-			if (FlatMath.Dot(normal, direction) < 0f) // hvis normalen peger væk fra den anden polygon
-			{
-				normal = -normal; // inverter normalen
-			}
-
-			return true; // overlap
-		}
-
-		private static FlatVector FindArithmeticMean(FlatVector[] vertices)
-		{
-			float sumX = 0f;
-			float sumY = 0f;
-
-			for (int i = 0; i < vertices.Length; i++)
-			{
-				FlatVector v = vertices[i];
-				sumX += v._X;
-				sumY += v._Y;
-			}
-
-			return new FlatVector(sumX / (float)vertices.Length, sumY / (float)vertices.Length);
-		}
-
 
 		private static void ProjectVertices(FlatVector[] vertices, FlatVector axis, out float min, out float max)
 		{
