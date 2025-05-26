@@ -8,6 +8,15 @@ namespace FlatPhysicsEngineFor2D
 {
 	public static class Collisions
 	{
+		public static bool IntersectAABB(FlatAABB a, FlatAABB b)
+		{
+			if (a._max._X <= b._min._X || b._max._X <= a._min._X || a._max._Y <= b._min._Y || b._max._Y <= a._min._Y)
+			{
+				return false;
+			}
+			return true;
+		}
+
 		public static void FindContactPoint(FlatBody bodyA, FlatBody bodyB, out FlatVector contactOne, out FlatVector contactTwo, out int contactCount)
 		{
 			contactOne = FlatVector._zero;

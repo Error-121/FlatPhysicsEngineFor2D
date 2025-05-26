@@ -84,12 +84,19 @@ namespace FlatPhysicsEngineFor2D
 				for (int i = 0; i < this._bodyList.Count - 1; i++)
 				{
 					FlatBody bodyA = this._bodyList[i];
+					FlatAABB bodyA_aabb = bodyA.GetAABB();
 
 					for (int j = i + 1; j < this._bodyList.Count; j++)
 					{
 						FlatBody bodyB = this._bodyList[j];
+						FlatAABB bodyB_aabb = bodyB.GetAABB();
 
 						if (bodyA._isStatic && bodyB._isStatic)
+						{
+							continue;
+						}
+
+						if (!Collisions.IntersectAABB(bodyA_aabb, bodyB_aabb))
 						{
 							continue;
 						}
