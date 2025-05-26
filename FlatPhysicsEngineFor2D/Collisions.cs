@@ -8,6 +8,31 @@ namespace FlatPhysicsEngineFor2D
 {
 	public static class Collisions
 	{
+		public static void PointSegmentDistance(FlatVector point, FlatVector a, FlatVector b, out float distanceSquared, out FlatVector closestPoint) 
+		{
+			FlatVector ab = b - a;
+			FlatVector ap = point - a;
+
+			float projection = FlatMath.Dot(ap, ab);
+			float abLengthSquared = FlatMath.LengthSquared(ab);
+			float d = projection / abLengthSquared;
+
+			if (d < 0f)
+			{
+				closestPoint = a;
+			}
+			else if (d > 1f)
+			{
+				closestPoint = b;
+			}
+			else
+			{
+				closestPoint = a + ab * d;
+			}
+
+			distanceSquared = FlatMath.DistanceSquared(point, closestPoint);
+		}
+
 		public static bool IntersectAABB(FlatAABB a, FlatAABB b)
 		{
 			if (a._max._X <= b._min._X || b._max._X <= a._min._X || a._max._Y <= b._min._Y || b._max._Y <= a._min._Y)
@@ -34,19 +59,42 @@ namespace FlatPhysicsEngineFor2D
 				}
 				else if (shapeTypeB is ShapeType.Circle)
 				{
-					
+					Collisions.FindContactPoint(bodyB.Position, bodyB._radius, bodyA.Position, bodyA.GetTransformedVertices(), out contactOne);
+					contactCount = 1;
 				}
 			}
 			else if (shapeTypeA is ShapeType.Circle)
 			{
 				if (shapeTypeB is ShapeType.Box)
 				{
-					
+					Collisions.FindContactPoint(bodyA.Position, bodyA._radius, bodyB.Position, bodyB.GetTransformedVertices(), out contactOne);
+					contactCount = 1;
 				}
 				else if (shapeTypeB is ShapeType.Circle)
 				{
 					Collisions.FindContactPoint(bodyB.Position, bodyB._radius, bodyA.Position, out contactOne);
 					contactCount = 1;
+				}
+			}
+		}
+
+		private static void FindContactPoint(FlatVector circleCenter, float circleRadius, FlatVector polygonCenter, FlatVector[] PoligonVertices, out FlatVector contactPoint)
+		{
+			contactPoint = FlatVector._zero;
+
+			float minDistanceSquared = float.MaxValue;
+
+			for (int i = 0; i < PoligonVertices.Length; i++)
+			{
+				FlatVector va = PoligonVertices[i];
+				FlatVector vb = PoligonVertices[(i + 1) % PoligonVertices.Length];
+				
+				Collisions.PointSegmentDistance(circleCenter, va, vb, out float distanceSquared, out FlatVector contact);
+
+				if (distanceSquared < minDistanceSquared)
+				{
+					minDistanceSquared = distanceSquared;
+					contactPoint = contact;
 				}
 			}
 		}

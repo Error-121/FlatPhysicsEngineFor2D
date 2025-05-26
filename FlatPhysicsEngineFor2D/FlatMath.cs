@@ -46,6 +46,18 @@ namespace FlatPhysicsEngineFor2D
 			return value;
 		}
 
+		public static float LengthSquared(FlatVector vector)
+		{
+			return vector._X * vector._X + vector._Y * vector._Y;
+		}
+
+		public static float DistanceSquared(FlatVector a, FlatVector b)
+		{
+			float deltaX = a._X - b._X;
+			float deltaY = a._Y - b._Y;
+			return deltaX * deltaX + deltaY * deltaY;
+		}
+
 		public static float Length(FlatVector vector)
 		{
 			//float deltaX = vector.X - 0f;

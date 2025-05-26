@@ -131,11 +131,18 @@ namespace FlatPhysicsEngineFor2D
 
 					if (contact._contactCount > 0)
 					{
-						this._ContactPointsList.Add(contact._contactOne);
+						if (!this._ContactPointsList.Contains(contact._contactOne))
+						{
+							// Add contact points to the list
+							this._ContactPointsList.Add(contact._contactOne);
+						}
 
 						if (contact._contactCount > 1)
 						{
-							this._ContactPointsList.Add(contact._contactTwo);
+							if (!this._ContactPointsList.Contains(contact._contactTwo))
+							{
+								this._ContactPointsList.Add(contact._contactTwo);
+							}
 						}
 					}
 				}
