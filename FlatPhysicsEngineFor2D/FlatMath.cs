@@ -4,6 +4,12 @@ namespace FlatPhysicsEngineFor2D
 {
 	public static class FlatMath
 	{
+		/// <summary>
+		/// A very small amount, used for precision checks and comparisons.
+		/// Equal to 1/2 a millimeter.
+		/// </summary>
+		public static readonly float VerySmallAmount = 0.0005f;
+
 		public static float Clamp(float value, float min, float max)
 		{
 			if (min == max)
@@ -95,6 +101,14 @@ namespace FlatPhysicsEngineFor2D
 			return a._X * b._Y - a._Y * b._X;
 		}
 
+		public static bool NearlyEqual(float a, float b)
+		{
+			return MathF.Abs(a - b) < FlatMath.VerySmallAmount;
+		}
 
+		public static bool NearlyEqual(FlatVector a, FlatVector b)
+		{
+			return NearlyEqual(a._X, b._X) && NearlyEqual(a._Y, b._Y);
+		}
 	}
 }

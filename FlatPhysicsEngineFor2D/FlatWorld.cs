@@ -117,7 +117,7 @@ namespace FlatPhysicsEngineFor2D
 								bodyB.Move(normal * depth / 2f);
 							}
 
-							Collisions.FindContactPoint(bodyA, bodyB, out FlatVector contactOne, out FlatVector contactTwo, out int contactCount);
+							Collisions.FindContactPoints(bodyA, bodyB, out FlatVector contactOne, out FlatVector contactTwo, out int contactCount);
 							FlatManifold contact = new FlatManifold(bodyA, bodyB, normal, depth, contactOne, contactTwo, contactCount);
 							this._contactList.Add(contact);
 						}
