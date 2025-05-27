@@ -61,20 +61,20 @@ namespace FlatPhysicsEngineFor2D
 			return true;
 		}
 
-		public void Step(float time, int iterations)
+		public void Step(float time, int totalIterations)
 		{
-			iterations = FlatMath.Clamp(iterations, FlatWorld._minIterations, FlatWorld._maxIterations);
+			totalIterations = FlatMath.Clamp(totalIterations, FlatWorld._minIterations, FlatWorld._maxIterations);
 
 			this._ContactPointsList.Clear();
 
-			for (int it = 0; it < iterations; it++)
+			for (int currentIteration = 0; currentIteration < totalIterations; currentIteration++)
 			{
 
 
 				// Movement step
 				for (int i = 0; i < this._bodyList.Count; i++)
 				{
-					this._bodyList[i].Step(time, this._gravity, iterations);
+					this._bodyList[i].Step(time, this._gravity, totalIterations);
 				}
 
 				// Clear contact list
@@ -103,20 +103,7 @@ namespace FlatPhysicsEngineFor2D
 
 						if (Collisions.Collide(bodyA, bodyB, out FlatVector normal, out float depth))
 						{
-							if (bodyA._isStatic)
-							{
-								bodyB.Move(normal * depth);
-							}
-							else if (bodyB._isStatic)
-							{
-								bodyA.Move(-normal * depth);
-							}
-							else
-							{
-								bodyA.Move(-normal * depth / 2f);
-								bodyB.Move(normal * depth / 2f);
-							}
-
+							this.SeparateBodies(bodyA, bodyB, normal * depth);
 							Collisions.FindContactPoints(bodyA, bodyB, out FlatVector contactOne, out FlatVector contactTwo, out int contactCount);
 							FlatManifold contact = new FlatManifold(bodyA, bodyB, normal, depth, contactOne, contactTwo, contactCount);
 							this._contactList.Add(contact);
@@ -129,14 +116,14 @@ namespace FlatPhysicsEngineFor2D
 					FlatManifold contact = this._contactList[i];
 					this.ResolveCollision(in contact);
 
-					if (contact._contactCount > 0)
+					// Add contact points to for the display
+					if (currentIteration == totalIterations - 1)
 					{
 						if (!this._ContactPointsList.Contains(contact._contactOne))
 						{
 							// Add contact points to the list
 							this._ContactPointsList.Add(contact._contactOne);
 						}
-
 						if (contact._contactCount > 1)
 						{
 							if (!this._ContactPointsList.Contains(contact._contactTwo))
@@ -146,7 +133,23 @@ namespace FlatPhysicsEngineFor2D
 						}
 					}
 				}
+			}
+		}
 
+		private void SeparateBodies(FlatBody bodyA, FlatBody bodyB, FlatVector mtv)
+		{
+			if (bodyA._isStatic)
+			{
+				bodyB.Move(mtv);
+			}
+			else if (bodyB._isStatic)
+			{
+				bodyA.Move(-mtv);
+			}
+			else
+			{
+				bodyA.Move(-mtv / 2f);
+				bodyB.Move(mtv / 2f);
 			}
 		}
 
