@@ -27,6 +27,8 @@ namespace FlatPhysicsEngineFor2D
 		public readonly float _invMass;
 		public readonly float _restitution;
 		public readonly float _area;
+		public readonly float _inertia;
+		public readonly float _invInertia;
 
 		public readonly bool _isStatic;
 
@@ -71,19 +73,25 @@ namespace FlatPhysicsEngineFor2D
 			this._restitution = restitution;
 			this._area = area;
 			
+
 			this._isStatic = isStatic;
 			this._radius = radius;
 			this._width = width;
 			this._height = height;
 			this.shapeType = shapeTybe;
+			
+			this._inertia = this.CalculateRotationalInertia();
+
 
 			if (!this._isStatic)
 			{
 				this._invMass = 1f / this._mass;
+				this._invInertia = 1f / this._inertia;
 			}
 			else
 			{
 				this._invMass = 0f;
+				this._invInertia = 0f;
 			}
 
 			if (this.shapeType is ShapeType.Box)
@@ -103,6 +111,24 @@ namespace FlatPhysicsEngineFor2D
 
 			this._transformUpdateRequired = true;
 			this._aabbUpdateRequired = true;
+		}
+
+		private float CalculateRotationalInertia()
+		{
+			if (this.shapeType is ShapeType.Circle)
+			{
+				// I = m * r^2 / 2
+				return (1f / 2f) * this._mass * this._radius * this._radius;
+			}
+			else if (this.shapeType is ShapeType.Box)
+			{
+				// I = m * (w^2 + h^2) / 12
+				return (1f / 12f) * this._mass * (this._width * this._width + this._height * this._height);
+			}
+			else
+			{
+				throw new ArgumentOutOfRangeException("ShapeType is not a valid.");
+			}
 		}
 
 		private static FlatVector[] CreateBoxVertices(float width, float height)
