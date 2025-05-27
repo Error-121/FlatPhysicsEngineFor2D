@@ -26,6 +26,8 @@ namespace FlatPhysicsEngineFor2D
 		private FlatVector[] impulseList;
 		private FlatVector[] raList;
 		private FlatVector[] rbList;
+		private FlatVector[] frictionImpulseList;
+		private float[] jList;
 
 		public int BodyCount
 		{
@@ -42,6 +44,8 @@ namespace FlatPhysicsEngineFor2D
 			this.impulseList = new FlatVector[2];
 			this.raList = new FlatVector[2];
 			this.rbList = new FlatVector[2];
+			this.frictionImpulseList = new FlatVector[2];
+			this.jList = new float[2];
 		}
 
 		public void AddBody(FlatBody body)
@@ -127,8 +131,8 @@ namespace FlatPhysicsEngineFor2D
 					Collisions.FindContactPoints(bodyA, bodyB, out FlatVector contactOne, out FlatVector contactTwo, out int contactCount);
 					FlatManifold contact = new FlatManifold(bodyA, bodyB, normal, depth, contactOne, contactTwo, contactCount);
 					//this.ResolveCollisionBasic(in contact); //call this method if you want to use basic collision resolution.
-					this.ResolevCollisionWithRotation(in contact); //call this method if you want to use collision resolution with rotation.
-
+					//this.ResolevCollisionWithRotation(in contact); //call this method if you want to use collision resolution with rotation.
+					this.ResolevCollisionWithRotationAndFriction(in contact); //call this method if you want to use collision resolution with rotation and friction.
 				}
 			}
 		}
@@ -250,6 +254,146 @@ namespace FlatPhysicsEngineFor2D
 				bodyA.AngularVelocity += -FlatMath.Cross(ra, impulse) * bodyA._invInertia;
 				bodyB.LinearVelocity += impulse * bodyB._invMass;
 				bodyB.AngularVelocity += FlatMath.Cross(rb, impulse) * bodyB._invInertia;
+			}
+		}
+
+		public void ResolevCollisionWithRotationAndFriction(in FlatManifold contact)
+		{
+			FlatBody bodyA = contact._bodyA;
+			FlatBody bodyB = contact._bodyB;
+			FlatVector normal = contact._normal;
+			FlatVector contactOne = contact._contactOne;
+			FlatVector contactTwo = contact._contactTwo;
+			int contactCount = contact._contactCount;
+
+			float e = MathF.Min(bodyA._restitution, bodyB._restitution);
+
+			float sf = bodyA._staticFriction + bodyB._staticFriction * 0.5f;
+			float df = bodyA._dynamicFriction + bodyB._dynamicFriction * 0.5f;
+
+			this.contactList[0] = contactOne;
+			this.contactList[1] = contactTwo;
+
+			for (int i = 0; i < contactCount; i++)
+			{
+				this.impulseList[i] = FlatVector._zero;
+				this.raList[i] = FlatVector._zero;
+				this.rbList[i] = FlatVector._zero;
+				this.frictionImpulseList[i] = FlatVector._zero;
+				this.jList[i] = 0f;
+			}
+
+			for (int i = 0; i < contactCount; i++)
+			{
+				FlatVector ra = contactList[i] - bodyA.Position;
+				FlatVector rb = contactList[i] - bodyB.Position;
+
+				raList[i] = ra;
+				rbList[i] = rb;
+
+				FlatVector raPerpendicular = new FlatVector(-ra._Y, ra._X);
+				FlatVector rbPerpendicular = new FlatVector(-rb._Y, rb._X);
+
+				FlatVector angularLinearVelocityA = raPerpendicular * bodyA.AngularVelocity;
+				FlatVector angularLinearVelocityB = rbPerpendicular * bodyB.AngularVelocity;
+
+				FlatVector relativeVelocity = (bodyB.LinearVelocity + angularLinearVelocityB) - (bodyA.LinearVelocity + angularLinearVelocityA);
+
+				float contactVelocityMag = FlatMath.Dot(relativeVelocity, normal);
+
+				if (contactVelocityMag > 0f)
+				{
+					continue;
+				}
+
+				float raPrepDotNormal = FlatMath.Dot(raPerpendicular, normal);
+				float rbPrepDotNormal = FlatMath.Dot(rbPerpendicular, normal);
+
+				float denominator = bodyA._invMass + bodyB._invMass + (raPrepDotNormal * raPrepDotNormal) * bodyA._invInertia + (rbPrepDotNormal * rbPrepDotNormal) * bodyB._invInertia;
+
+				float j = -(1f + e) * contactVelocityMag;
+				j /= denominator;
+				j /= (float)contactCount;
+
+				jList[i] = j;
+
+				FlatVector impulse = j * normal;
+				impulseList[i] = impulse;
+			}
+
+			for (int i = 0; i < contactCount; i++)
+			{
+				FlatVector impulse = impulseList[i];
+				FlatVector ra = raList[i];
+				FlatVector rb = rbList[i];
+
+				bodyA.LinearVelocity += -impulse * bodyA._invMass;
+				bodyA.AngularVelocity += -FlatMath.Cross(ra, impulse) * bodyA._invInertia;
+				bodyB.LinearVelocity += impulse * bodyB._invMass;
+				bodyB.AngularVelocity += FlatMath.Cross(rb, impulse) * bodyB._invInertia;
+			}
+
+			for (int i = 0; i < contactCount; i++)
+			{
+				FlatVector ra = contactList[i] - bodyA.Position;
+				FlatVector rb = contactList[i] - bodyB.Position;
+
+				raList[i] = ra;
+				rbList[i] = rb;
+
+				FlatVector raPerpendicular = new FlatVector(-ra._Y, ra._X);
+				FlatVector rbPerpendicular = new FlatVector(-rb._Y, rb._X);
+
+				FlatVector angularLinearVelocityA = raPerpendicular * bodyA.AngularVelocity;
+				FlatVector angularLinearVelocityB = rbPerpendicular * bodyB.AngularVelocity;
+
+				FlatVector relativeVelocity = (bodyB.LinearVelocity + angularLinearVelocityB) - (bodyA.LinearVelocity + angularLinearVelocityA);
+				
+				FlatVector tangent = relativeVelocity - FlatMath.Dot(relativeVelocity, normal) * normal;
+
+				if (FlatMath.NearlyEqual(tangent, FlatVector._zero))
+				{
+					continue;
+				}
+				else
+				{
+					tangent = FlatMath.Normalize(tangent);
+				}
+
+				float raPrepDotTangent = FlatMath.Dot(raPerpendicular, tangent);
+				float rbPrepDotTangent = FlatMath.Dot(rbPerpendicular, tangent);
+
+				float denominator = bodyA._invMass + bodyB._invMass + (raPrepDotTangent * raPrepDotTangent) * bodyA._invInertia + (rbPrepDotTangent * rbPrepDotTangent) * bodyB._invInertia;
+
+				float jt = -FlatMath.Dot(relativeVelocity, tangent);
+				jt /= denominator;
+				jt /= (float)contactCount;
+
+				FlatVector frictionImpulse;
+				float j = jList[i];
+
+				if (MathF.Abs(jt) < j * sf) 
+				{
+					frictionImpulse = jt * tangent;
+				}
+				else
+				{
+					frictionImpulse = -j * df * tangent;
+				}
+
+				this.frictionImpulseList[i] = frictionImpulse;
+			}
+
+			for (int i = 0; i < contactCount; i++)
+			{
+				FlatVector frictionImpulse = frictionImpulseList[i];
+				FlatVector ra = raList[i];
+				FlatVector rb = rbList[i];
+
+				bodyA.LinearVelocity += -frictionImpulse * bodyA._invMass;
+				bodyA.AngularVelocity += -FlatMath.Cross(ra, frictionImpulse) * bodyA._invInertia;
+				bodyB.LinearVelocity += frictionImpulse * bodyB._invMass;
+				bodyB.AngularVelocity += FlatMath.Cross(rb, frictionImpulse) * bodyB._invInertia;
 			}
 		}
 	}

@@ -35,6 +35,8 @@ namespace FlatPhysicsEngineFor2D
 		public readonly float _radius;
 		public readonly float _width;
 		public readonly float _height;
+		public readonly float _staticFriction;
+		public readonly float _dynamicFriction;
 		//everything above can be moved to a separate class
 
 		// vertices and triangles are used for rendering and collision detection
@@ -90,6 +92,8 @@ namespace FlatPhysicsEngineFor2D
 			this._radius = radius;
 			this._width = width;
 			this._height = height;
+			this._staticFriction = 0.6f;
+			this._dynamicFriction = 0.4f;
 
 			if (this._shapeType is ShapeType.Box)
 			{
