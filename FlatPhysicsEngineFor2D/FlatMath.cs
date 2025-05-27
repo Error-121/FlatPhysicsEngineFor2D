@@ -108,7 +108,7 @@ namespace FlatPhysicsEngineFor2D
 
 		public static bool NearlyEqual(FlatVector a, FlatVector b)
 		{
-			return NearlyEqual(a._X, b._X) && NearlyEqual(a._Y, b._Y);
+			return FlatMath.DistanceSquared(a, b) < FlatMath.VerySmallAmount * FlatMath.VerySmallAmount;
 		}
 	}
 }

@@ -48,18 +48,18 @@ namespace FlatPhysicsEngineFor2D
 			contactTwo = FlatVector._zero;
 			contactCount = 0;
 
-			ShapeType shapeTypeA = bodyA.shapeType;
-			ShapeType shapeTypeB = bodyB.shapeType;
+			ShapeType shapeTypeA = bodyA._shapeType;
+			ShapeType shapeTypeB = bodyB._shapeType;
 
 			if (shapeTypeA is ShapeType.Box)
 			{
 				if (shapeTypeB is ShapeType.Box)
 				{
-					Collisions.FindContactPoints(bodyA.GetTransformedVertices(), bodyB.GetTransformedVertices(), out contactOne, out contactTwo, out contactCount);
+					Collisions.FindPolygonsContactPoints(bodyA.GetTransformedVertices(), bodyB.GetTransformedVertices(), out contactOne, out contactTwo, out contactCount);
 				}
 				else if (shapeTypeB is ShapeType.Circle)
 				{
-					Collisions.FindContactPoint(bodyB.Position, bodyB._radius, bodyA.Position, bodyA.GetTransformedVertices(), out contactOne);
+					Collisions.FindCirclePolygonContactPoint(bodyB.Position, bodyB._radius, bodyA.Position, bodyA.GetTransformedVertices(), out contactOne);
 					contactCount = 1;
 				}
 			}
@@ -67,18 +67,18 @@ namespace FlatPhysicsEngineFor2D
 			{
 				if (shapeTypeB is ShapeType.Box)
 				{
-					Collisions.FindContactPoint(bodyA.Position, bodyA._radius, bodyB.Position, bodyB.GetTransformedVertices(), out contactOne);
+					Collisions.FindCirclePolygonContactPoint(bodyA.Position, bodyA._radius, bodyB.Position, bodyB.GetTransformedVertices(), out contactOne);
 					contactCount = 1;
 				}
 				else if (shapeTypeB is ShapeType.Circle)
 				{
-					Collisions.FindContactPoint(bodyB.Position, bodyB._radius, bodyA.Position, out contactOne);
+					Collisions.FindCirclesContactPoint(bodyB.Position, bodyB._radius, bodyA.Position, out contactOne);
 					contactCount = 1;
 				}
 			}
 		}
 
-		private static void FindContactPoints(FlatVector[] verticesA, FlatVector[] verticesB, out FlatVector contactOne, out FlatVector contactTwo, out int contactCount)
+		private static void FindPolygonsContactPoints(FlatVector[] verticesA, FlatVector[] verticesB, out FlatVector contactOne, out FlatVector contactTwo, out int contactCount)
 		{
 			contactOne = FlatVector._zero;
 			contactTwo = FlatVector._zero;
@@ -143,7 +143,7 @@ namespace FlatPhysicsEngineFor2D
 			}
 		}
 
-		private static void FindContactPoint(FlatVector circleCenter, float circleRadius, FlatVector polygonCenter, FlatVector[] PoligonVertices, out FlatVector contactPoint)
+		private static void FindCirclePolygonContactPoint(FlatVector circleCenter, float circleRadius, FlatVector polygonCenter, FlatVector[] PoligonVertices, out FlatVector contactPoint)
 		{
 			contactPoint = FlatVector._zero;
 
@@ -164,7 +164,7 @@ namespace FlatPhysicsEngineFor2D
 			}
 		}
 
-		private static void FindContactPoint(FlatVector centerA, float radiusA, FlatVector centerB, out FlatVector contactPoint)
+		private static void FindCirclesContactPoint(FlatVector centerA, float radiusA, FlatVector centerB, out FlatVector contactPoint)
 		{
 			FlatVector ab = FlatMath.Normalize(centerB - centerA);
 			contactPoint = centerA + ab * radiusA;
@@ -175,8 +175,8 @@ namespace FlatPhysicsEngineFor2D
 			normal = FlatVector._zero;
 			depth = 0f;
 
-			ShapeType shapeTypeA = bodyA.shapeType;
-			ShapeType shapeTypeB = bodyB.shapeType;
+			ShapeType shapeTypeA = bodyA._shapeType;
+			ShapeType shapeTypeB = bodyB._shapeType;
 
 			if (shapeTypeA is ShapeType.Box)
 			{
