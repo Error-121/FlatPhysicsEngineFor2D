@@ -9,7 +9,7 @@ namespace FlatPhysicsEngineFor2D
 {
 	public sealed class FlatWorld
 	{
-		public static readonly float _minBodySize = 0.01f*0.01f;
+		public static readonly float _minBodySize = 0.01f * 0.01f;
 		public static readonly float _maxBodySize = 64f * 64f;
 
 		public static readonly float _minDensity = 0.05f;    // g/cm^3
@@ -22,6 +22,10 @@ namespace FlatPhysicsEngineFor2D
 		private List<FlatBody> _bodyList;
 		private List<(int, int)> _contactPairs;
 
+		private FlatVector[] contactList;
+		private FlatVector[] impulseList;
+		private FlatVector[] raList;
+		private FlatVector[] rbList;
 
 		public int BodyCount
 		{
@@ -33,6 +37,11 @@ namespace FlatPhysicsEngineFor2D
 			this._gravity = new FlatVector(0f, -9.81f);
 			this._bodyList = new List<FlatBody>();
 			this._contactPairs = new List<(int, int)>();
+
+			this.contactList = new FlatVector[2];
+			this.impulseList = new FlatVector[2];
+			this.raList = new FlatVector[2];
+			this.rbList = new FlatVector[2];
 		}
 
 		public void AddBody(FlatBody body)
@@ -117,12 +126,14 @@ namespace FlatPhysicsEngineFor2D
 					this.SeparateBodies(bodyA, bodyB, normal * depth);
 					Collisions.FindContactPoints(bodyA, bodyB, out FlatVector contactOne, out FlatVector contactTwo, out int contactCount);
 					FlatManifold contact = new FlatManifold(bodyA, bodyB, normal, depth, contactOne, contactTwo, contactCount);
-					this.ResolveCollision(in contact);
+					//this.ResolveCollisionBasic(in contact); //call this method if you want to use basic collision resolution.
+					this.ResolevCollisionWithRotation(in contact); //call this method if you want to use collision resolution with rotation.
+
 				}
 			}
 		}
 
-		public void StepBodies(float time, int totalIterations) 
+		public void StepBodies(float time, int totalIterations)
 		{
 			for (int i = 0; i < this._bodyList.Count; i++)
 			{
@@ -147,7 +158,7 @@ namespace FlatPhysicsEngineFor2D
 			}
 		}
 
-		public void ResolveCollision(in FlatManifold contact)
+		public void ResolveCollisionBasic(in FlatManifold contact)
 		{
 			FlatBody bodyA = contact._bodyA;
 			FlatBody bodyB = contact._bodyB;
@@ -172,5 +183,74 @@ namespace FlatPhysicsEngineFor2D
 			bodyB.LinearVelocity += impulse * bodyB._invMass;
 		}
 
+		public void ResolevCollisionWithRotation(in FlatManifold contact)
+		{
+			FlatBody bodyA = contact._bodyA;
+			FlatBody bodyB = contact._bodyB;
+			FlatVector normal = contact._normal;
+			FlatVector contactOne = contact._contactOne;
+			FlatVector contactTwo = contact._contactTwo;
+			int contactCount = contact._contactCount;
+
+			float e = MathF.Min(bodyA._restitution, bodyB._restitution);
+
+			this.contactList[0] = contactOne;
+			this.contactList[1] = contactTwo;
+
+			for (int i = 0; i < contactCount; i++)
+			{
+				this.impulseList[i] = FlatVector._zero;
+				this.raList[i] = FlatVector._zero;
+				this.rbList[i] = FlatVector._zero;
+			}
+
+			for (int i = 0; i < contactCount; i++)
+			{
+				FlatVector ra = contactList[i] - bodyA.Position;
+				FlatVector rb = contactList[i] - bodyB.Position;
+
+				raList[i] = ra;
+				rbList[i] = rb;
+
+				FlatVector raPerpendicular = new FlatVector(-ra._Y, ra._X);
+				FlatVector rbPerpendicular = new FlatVector(-rb._Y, rb._X);
+
+				FlatVector angularLinearVelocityA = raPerpendicular * bodyA.AngularVelocity;
+				FlatVector angularLinearVelocityB = rbPerpendicular * bodyB.AngularVelocity;
+
+				FlatVector relativeVelocity = ( bodyB.LinearVelocity + angularLinearVelocityB ) - ( bodyA.LinearVelocity + angularLinearVelocityA);
+				
+				float contactVelocityMag = FlatMath.Dot(relativeVelocity, normal);
+
+				if (contactVelocityMag > 0f)
+				{
+					continue;
+				}
+
+				float raPrepDotNormal = FlatMath.Dot(raPerpendicular, normal);
+				float rbPrepDotNormal = FlatMath.Dot(rbPerpendicular, normal);
+
+				float denominator = bodyA._invMass + bodyB._invMass + (raPrepDotNormal * raPrepDotNormal) * bodyA._invInertia + (rbPrepDotNormal * rbPrepDotNormal) * bodyB._invInertia;
+
+				float j = -(1f + e) * contactVelocityMag;
+				j /= denominator;
+				j /= (float)contactCount;
+
+				FlatVector impulse = j * normal;
+				impulseList[i] = impulse;
+			}
+
+			for (int i = 0; i < contactCount; i++)
+			{
+				FlatVector impulse = impulseList[i];
+				FlatVector ra = raList[i];
+				FlatVector rb = rbList[i];
+
+				bodyA.LinearVelocity += -impulse * bodyA._invMass;
+				bodyA.AngularVelocity += -FlatMath.Cross(ra, impulse) * bodyA._invInertia;
+				bodyB.LinearVelocity += impulse * bodyB._invMass;
+				bodyB.AngularVelocity += FlatMath.Cross(rb, impulse) * bodyB._invInertia;
+			}
+		}
 	}
 }

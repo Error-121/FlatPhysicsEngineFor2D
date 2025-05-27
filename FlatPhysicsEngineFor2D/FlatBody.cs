@@ -64,6 +64,12 @@ namespace FlatPhysicsEngineFor2D
 			get { return this._angle; }
 		}
 
+		public float AngularVelocity
+		{
+			get { return this._angularVelocity; }
+			internal set { this._angularVelocity = value; }
+		}
+
 		private FlatBody(float density, float mass, float inertia, float restitution, float area, bool isStatic, float radius, float width, float height, FlatVector[] vertices, ShapeType shapeTybe) 
 		{
 			this._position = FlatVector._zero;
