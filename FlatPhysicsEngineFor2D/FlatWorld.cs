@@ -20,9 +20,8 @@ namespace FlatPhysicsEngineFor2D
 
 		private FlatVector _gravity;
 		private List<FlatBody> _bodyList;
-		private List<FlatManifold> _contactList;
+		private List<(int, int)> _contactPairs;
 
-		public List<FlatVector> _ContactPointsList;
 
 		public int BodyCount
 		{
@@ -33,9 +32,7 @@ namespace FlatPhysicsEngineFor2D
 		{
 			this._gravity = new FlatVector(0f, -9.81f);
 			this._bodyList = new List<FlatBody>();
-			this._contactList = new List<FlatManifold>();
-
-			this._ContactPointsList = new List<FlatVector>();
+			this._contactPairs = new List<(int, int)>();
 		}
 
 		public void AddBody(FlatBody body)
@@ -65,74 +62,71 @@ namespace FlatPhysicsEngineFor2D
 		{
 			totalIterations = FlatMath.Clamp(totalIterations, FlatWorld._minIterations, FlatWorld._maxIterations);
 
-			this._ContactPointsList.Clear();
-
 			for (int currentIteration = 0; currentIteration < totalIterations; currentIteration++)
 			{
+				this._contactPairs.Clear();
+				this.StepBodies(time, totalIterations);
+				this.BroadPhaseCollision();
+				this.NarrowPhaseCollision();
+			}
+		}
 
+		private void BroadPhaseCollision()
+		{
+			// This method is typically involve checking for potential collisions
+			// between bodies based on their AABBs (Axis-Aligned Bounding Boxes).
+			for (int i = 0; i < this._bodyList.Count - 1; i++)
+			{
+				FlatBody bodyA = this._bodyList[i];
+				FlatAABB bodyA_aabb = bodyA.GetAABB();
 
-				// Movement step
-				for (int i = 0; i < this._bodyList.Count; i++)
+				for (int j = i + 1; j < this._bodyList.Count; j++)
 				{
-					this._bodyList[i].Step(time, this._gravity, totalIterations);
-				}
+					FlatBody bodyB = this._bodyList[j];
+					FlatAABB bodyB_aabb = bodyB.GetAABB();
 
-				// Clear contact list
-				this._contactList.Clear();
-
-				// collision step
-				for (int i = 0; i < this._bodyList.Count - 1; i++)
-				{
-					FlatBody bodyA = this._bodyList[i];
-					FlatAABB bodyA_aabb = bodyA.GetAABB();
-
-					for (int j = i + 1; j < this._bodyList.Count; j++)
+					if (bodyA._isStatic && bodyB._isStatic)
 					{
-						FlatBody bodyB = this._bodyList[j];
-						FlatAABB bodyB_aabb = bodyB.GetAABB();
-
-						if (bodyA._isStatic && bodyB._isStatic)
-						{
-							continue;
-						}
-
-						if (!Collisions.IntersectAABB(bodyA_aabb, bodyB_aabb))
-						{
-							continue;
-						}
-
-						if (Collisions.Collide(bodyA, bodyB, out FlatVector normal, out float depth))
-						{
-							this.SeparateBodies(bodyA, bodyB, normal * depth);
-							Collisions.FindContactPoints(bodyA, bodyB, out FlatVector contactOne, out FlatVector contactTwo, out int contactCount);
-							FlatManifold contact = new FlatManifold(bodyA, bodyB, normal, depth, contactOne, contactTwo, contactCount);
-							this._contactList.Add(contact);
-						}
+						continue;
 					}
-				}
 
-				for (int i = 0; i < this._contactList.Count; i++)
+					if (!Collisions.IntersectAABB(bodyA_aabb, bodyB_aabb))
+					{
+						continue;
+					}
+
+					this._contactPairs.Add((i, j));
+				}
+			}
+		}
+
+		private void NarrowPhaseCollision()
+		{
+			// This method typically involve checking for actual collisions
+			// between bodies that were found to be potentially colliding
+			// in the broad phase.
+
+			for (int i = 0; i < this._contactPairs.Count; i++)
+			{
+				(int, int) pair = this._contactPairs[i];
+				FlatBody bodyA = this._bodyList[pair.Item1];
+				FlatBody bodyB = this._bodyList[pair.Item2];
+
+				if (Collisions.Collide(bodyA, bodyB, out FlatVector normal, out float depth))
 				{
-					FlatManifold contact = this._contactList[i];
+					this.SeparateBodies(bodyA, bodyB, normal * depth);
+					Collisions.FindContactPoints(bodyA, bodyB, out FlatVector contactOne, out FlatVector contactTwo, out int contactCount);
+					FlatManifold contact = new FlatManifold(bodyA, bodyB, normal, depth, contactOne, contactTwo, contactCount);
 					this.ResolveCollision(in contact);
-
-					// Add contact points to for the display
-					if (currentIteration == totalIterations - 1)
-					{
-						if (!this._ContactPointsList.Contains(contact._contactOne))
-						{
-							// Add contact points to the list
-							this._ContactPointsList.Add(contact._contactOne);
-						}
-						if (contact._contactCount > 1)
-						{
-							if (!this._ContactPointsList.Contains(contact._contactTwo))
-							{
-								this._ContactPointsList.Add(contact._contactTwo);
-							}
-						}
-					}
 				}
+			}
+		}
+
+		public void StepBodies(float time, int totalIterations) 
+		{
+			for (int i = 0; i < this._bodyList.Count; i++)
+			{
+				this._bodyList[i].Step(time, this._gravity, totalIterations);
 			}
 		}
 
